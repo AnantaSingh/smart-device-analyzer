@@ -1,7 +1,8 @@
 from flask import Flask, render_template, jsonify
-from ai_analyzer import DeviceAnalyzer
+from .ai_analyzer import DeviceAnalyzer
 import threading
 import json
+import os
 
 app = Flask(__name__)
 device_analyzer = DeviceAnalyzer()
@@ -47,4 +48,7 @@ def stop_analyzer():
         return jsonify({"status": "error", "message": str(e)})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000) 
+    # In local development, this will use 5000
+    # On Render, this will use whatever PORT they assign
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', debug=False, port=port) 
