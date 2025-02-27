@@ -11,6 +11,8 @@ import warnings
 from sklearn.ensemble import IsolationForest
 from collections import deque
 import joblib
+import asyncio
+import websockets
 
 # Suppress the SSL warning
 warnings.filterwarnings('ignore', message='urllib3 v2 only supports OpenSSL')
@@ -97,12 +99,13 @@ class DeviceAnalyzer:
     def __init__(self):
         self.sentiment_levels = ['Normal', 'Stressed', 'Fatigued', 'Critical']
         self.running = True
-        self.server_socket = None
-        self.clients = []
+        self.server = None
+        self.loop = None
+        self.websocket = None
         self.history = deque(maxlen=100)
         self.anomaly_detector = IsolationForest(contamination=0.15, random_state=42)
         self.is_model_trained = False
-        self.port = 5001  # Changed port to 5001
+        self.port = 5001
 
     def analyze_sentiment_with_ml(self, metrics):
         """Use ML to analyze device sentiment based on patterns"""
@@ -170,57 +173,105 @@ class DeviceAnalyzer:
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
 
-    def start_server(self, port=5001):  # Changed default port to 5001
+    def start_server(self, port=5001):
         try:
-            self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # Add this line to allow port reuse
-            self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.server_socket.bind(('localhost', port))
-            self.server_socket.listen(5)
-            print(f"Server started on port {port}")
+            import websockets
+            import asyncio
             
-            while self.running:
+            async def handler(websocket):
+                print(f"New client connected!")
+                self.websocket = websocket
                 try:
-                    client, addr = self.server_socket.accept()
-                    self.clients.append(client)
-                    print(f"Client connected from {addr}")
-                    threading.Thread(target=self.handle_client, args=(client,)).start()
+                    while self.running:
+                        metrics = self.simulate_device_metrics()
+                        sentiment = self.analyze_sentiment_with_ml(metrics)
+                        combined_load = round((metrics['cpu_usage'] * 0.7) + (metrics['memory_usage'] * 0.3), 2)
+                        
+                        data = {
+                            **metrics,
+                            'sentiment': sentiment,
+                            'combined_load': combined_load,
+                            'ml_enabled': self.is_model_trained
+                        }
+                        print(f"Sending data: {data}")
+                        await websocket.send(json.dumps(data))
+                        await asyncio.sleep(2)
+                except websockets.exceptions.ConnectionClosed:
+                    print("Client disconnected")
                 except Exception as e:
-                    if self.running:
-                        print(f"Error accepting client: {e}")
-                    break
+                    print(f"Error in handler: {e}")
+                finally:
+                    self.websocket = None
+                    print("Handler finished")
+
+            async def start_server_async():
+                try:
+                    self.server = await websockets.serve(
+                        handler, 
+                        "0.0.0.0", 
+                        port,
+                        reuse_address=True,
+                        close_timeout=1
+                    )
+                    print(f"WebSocket server running on port {port}")
+                    await self.server.wait_closed()
+                except Exception as e:
+                    print(f"Error in start_server_async: {e}")
+                    self.running = False
+                    raise
+
+            # Create new event loop
+            self.loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self.loop)
+            self.running = True
+            
+            try:
+                self.loop.run_until_complete(start_server_async())
+            except Exception as e:
+                print(f"Error in event loop: {e}")
+                self.stop()
+                raise
+            
         except Exception as e:
             print(f"Error starting server: {e}")
             self.stop()
-
-    def handle_client(self, client):
-        while self.running:
-            try:
-                metrics = self.simulate_device_metrics()
-                sentiment = self.analyze_sentiment_with_ml(metrics)
-                
-                # Calculate load percentage for display
-                combined_load = round((metrics['cpu_usage'] * 0.7) + (metrics['memory_usage'] * 0.3), 2)
-                
-                data = {
-                    **metrics, 
-                    'sentiment': sentiment,
-                    'combined_load': combined_load,
-                    'ml_enabled': self.is_model_trained
-                }
-                client.send(json.dumps(data).encode())
-                time.sleep(2)
-            except Exception as e:
-                print(f"Error handling client: {e}")
-                self.clients.remove(client)
-                break
+            raise
 
     def stop(self):
+        print("Stopping server...")
         self.running = False
-        if self.server_socket:
-            self.server_socket.close()
-        for client in self.clients:
-            client.close()
+
+        try:
+            if self.server:
+                self.server.close()
+            
+            if self.loop and self.loop.is_running():
+                async def cleanup():
+                    if self.server:
+                        await self.server.wait_closed()
+                    for task in asyncio.all_tasks(self.loop):
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
+
+                try:
+                    self.loop.run_until_complete(cleanup())
+                except Exception as e:
+                    print(f"Error during cleanup: {e}")
+                finally:
+                    self.loop.stop()
+                    self.loop.close()
+
+            # Reset all attributes
+            self.server = None
+            self.loop = None
+            self.websocket = None
+            
+            print("Server stopped successfully")
+        except Exception as e:
+            print(f"Error during stop: {e}")
 
 def start_client():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
