@@ -2,6 +2,15 @@ from transformers import pipeline
 import pandas as pd
 from typing import Dict, Any, Union
 import numpy as np
+from datetime import datetime
+import time
+import threading
+import socket
+import json
+import warnings
+
+# Suppress the SSL warning
+warnings.filterwarnings('ignore', message='urllib3 v2 only supports OpenSSL')
 
 class AIAnalyzer:
     def __init__(self):
@@ -80,3 +89,113 @@ class AIAnalyzer:
                 for k, v in anomalies.head(5).items()
             }
         } 
+
+class DeviceAnalyzer:
+    def __init__(self):
+        self.sentiment_levels = ['Normal', 'Stressed', 'Fatigued', 'Critical']
+        self.running = True
+        self.server_socket = None
+        self.clients = []
+        self.port = 5001  # Changed port to 5001
+
+    def analyze_sentiment(self, metrics):
+        if metrics['cpu_usage'] > 90:
+            return 'Critical'
+        elif metrics['cpu_usage'] > 70:
+            return 'Stressed'
+        elif metrics['cpu_usage'] > 50:
+            return 'Fatigued'
+        return 'Normal'
+
+    def simulate_device_metrics(self):
+        return {
+            'cpu_usage': np.random.randint(30, 100),
+            'memory_usage': np.random.randint(20, 95),
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+    def start_server(self, port=5001):  # Changed default port to 5001
+        try:
+            self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # Add this line to allow port reuse
+            self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.server_socket.bind(('localhost', port))
+            self.server_socket.listen(5)
+            print(f"Server started on port {port}")
+            
+            while self.running:
+                try:
+                    client, addr = self.server_socket.accept()
+                    self.clients.append(client)
+                    print(f"Client connected from {addr}")
+                    threading.Thread(target=self.handle_client, args=(client,)).start()
+                except Exception as e:
+                    if self.running:
+                        print(f"Error accepting client: {e}")
+                    break
+        except Exception as e:
+            print(f"Error starting server: {e}")
+            self.stop()
+
+    def handle_client(self, client):
+        while self.running:
+            try:
+                metrics = self.simulate_device_metrics()
+                sentiment = self.analyze_sentiment(metrics)
+                data = {**metrics, 'sentiment': sentiment}
+                client.send(json.dumps(data).encode())
+                time.sleep(2)
+            except:
+                self.clients.remove(client)
+                break
+
+    def stop(self):
+        self.running = False
+        if self.server_socket:
+            self.server_socket.close()
+        for client in self.clients:
+            client.close()
+
+def start_client():
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        client.connect(('localhost', 5001))  # Changed port to 5001
+        print("Connected to server. Receiving data...")
+        
+        while True:
+            data = json.loads(client.recv(1024).decode())
+            print("\n" + "="*50)
+            print(f"Timestamp: {data['timestamp']}")
+            print(f"CPU Usage: {data['cpu_usage']}%")
+            print(f"Memory Usage: {data['memory_usage']}%")
+            print(f"Device Sentiment: {data['sentiment']}")
+            if data['cpu_usage'] > 85:
+                print("⚠️ ANOMALY DETECTED!")
+            print("="*50)
+    except KeyboardInterrupt:
+        print("\nClient stopped by user")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        client.close()
+
+def main():
+    print("\nSmart Device Analyzer")
+    print("1. Start Server")
+    print("2. Start Client")
+    choice = input("Enter your choice (1/2): ")
+
+    if choice == "1":
+        analyzer = DeviceAnalyzer()
+        try:
+            analyzer.start_server()
+        except KeyboardInterrupt:
+            print("\nServer stopped by user")
+            analyzer.stop()
+    elif choice == "2":
+        start_client()
+    else:
+        print("Invalid choice!")
+
+if __name__ == "__main__":
+    main() 
