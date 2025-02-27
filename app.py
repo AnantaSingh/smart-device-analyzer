@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify
-from .ai_analyzer import DeviceAnalyzer
+from ai_analyzer import DeviceAnalyzer
 import threading
 import json
 import os
