@@ -45,24 +45,84 @@ smart-device-analyzer/
 - PyTorch
 - Additional dependencies in requirements.txt
 
-## Installation
+## Prerequisites
 
-1. Clone the repository:
+- Python 3.9+
+- pip (Python package installer)
+- Terminal or Command Prompt
+
+## Installation & Setup
+
+1. Navigate to project directory:
 ```bash
-git clone https://github.com/AnantaSingh/smart-device-analyzer.git
-cd smart-device-analyzer
+cd /Users/anantasingh/Projects/AIApp
 ```
 
-2. Set up virtual environment:
+2. Create and activate virtual environment:
 ```bash
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Activate virtual environment
+source venv/bin/activate  # On macOS/Linux
+# OR
+venv\Scripts\activate     # On Windows
 ```
 
-3. Install dependencies:
+3. Install required packages:
 ```bash
-pip install -r requirements.txt
+pip install numpy
 ```
+
+## Running the Application
+
+The application uses a client-server architecture and requires two terminal windows.
+
+### Start the Server (Terminal 1):
+```bash
+# Navigate to src directory
+cd /Users/anantasingh/Projects/AIApp/src
+
+# Run the analyzer
+python ai_analyzer.py
+
+# Enter 1 when prompted to start server
+```
+
+### Start the Client (Terminal 2):
+```bash
+# Navigate to src directory
+cd /Users/anantasingh/Projects/AIApp/src
+
+# Run the analyzer
+python ai_analyzer.py
+
+# Enter 2 when prompted to start client
+```
+
+### Expected Output
+
+- **Server Terminal:**
+  - "Server started on port 5001"
+  - Connection status messages
+
+- **Client Terminal:**
+  - Real-time device metrics
+  - Sentiment analysis results
+  - Anomaly detection alerts
+  - CPU and Memory usage statistics
+
+### Stopping the Application
+
+- Press `Ctrl+C` in either terminal to stop the respective component
+- Close both terminals to completely shut down the application
+
+## Troubleshooting
+
+If you encounter port-in-use errors:
+1. Wait a few minutes and try again
+2. Check if another instance is running
+3. Use Activity Monitor (macOS) or Task Manager (Windows) to check port usage
 
 ## Contributing
 
