@@ -13,6 +13,7 @@ from collections import deque
 import joblib
 import asyncio
 import websockets
+import os
 
 # Suppress the SSL warning
 warnings.filterwarnings('ignore', message='urllib3 v2 only supports OpenSSL')
@@ -173,11 +174,20 @@ class DeviceAnalyzer:
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
 
-    def start_server(self, port=5001):
+    def start_server(self, port=None):
         try:
             import websockets
             import asyncio
             
+            # Use a different port for WebSocket
+            if port is None:
+                # WebSocket port should be different from HTTP port
+                ws_port = int(os.environ.get('WS_PORT', 5001))
+            else:
+                ws_port = port
+
+            print(f"Starting WebSocket server on port {ws_port}")
+
             async def handler(websocket):
                 print(f"New client connected!")
                 self.websocket = websocket
@@ -205,37 +215,24 @@ class DeviceAnalyzer:
                     print("Handler finished")
 
             async def start_server_async():
-                try:
-                    self.server = await websockets.serve(
-                        handler, 
-                        "0.0.0.0", 
-                        port,
-                        reuse_address=True,
-                        close_timeout=1
-                    )
-                    print(f"WebSocket server running on port {port}")
-                    await self.server.wait_closed()
-                except Exception as e:
-                    print(f"Error in start_server_async: {e}")
-                    self.running = False
-                    raise
+                self.server = await websockets.serve(
+                    handler, 
+                    "0.0.0.0", 
+                    ws_port,
+                    reuse_address=True,
+                    close_timeout=1
+                )
+                print(f"WebSocket server running on port {ws_port}")
+                await self.server.wait_closed()
 
-            # Create new event loop
             self.loop = asyncio.new_event_loop()
             asyncio.set_event_loop(self.loop)
             self.running = True
-            
-            try:
-                self.loop.run_until_complete(start_server_async())
-            except Exception as e:
-                print(f"Error in event loop: {e}")
-                self.stop()
-                raise
+            self.loop.run_until_complete(start_server_async())
             
         except Exception as e:
             print(f"Error starting server: {e}")
             self.stop()
-            raise
 
     def stop(self):
         print("Stopping server...")

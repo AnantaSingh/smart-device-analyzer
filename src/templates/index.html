@@ -78,6 +78,15 @@
     <script>
         let socket = null;
 
+        const config = {
+            backendUrl: window.location.hostname === 'localhost' 
+                ? 'http://localhost:5000'
+                : 'https://smart-device-analyzer.onrender.com',  // Update with your Render URL
+            wsUrl: window.location.hostname === 'localhost'
+                ? 'ws://localhost:5001'
+                : 'wss://smart-device-analyzer.onrender.com'     // Update with your Render URL
+        };
+
         function updateMetrics(data) {
             console.log('Received data:', data);
             document.getElementById('cpuValue').textContent = `${data.cpu_usage}%`;
@@ -121,7 +130,7 @@
 
         document.getElementById('startBtn').addEventListener('click', async () => {
             try {
-                const response = await fetch('/start_analyzer');
+                const response = await fetch(`${config.backendUrl}/start_analyzer`);
                 const result = await response.json();
                 console.log('Start analyzer response:', result);
                 
@@ -134,8 +143,8 @@
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 const connectWebSocket = () => {
-                    if (!socket) {  // Only create new connection if none exists
-                        socket = new WebSocket('ws://localhost:5001');
+                    if (!socket) {
+                        socket = new WebSocket(config.wsUrl);
                         
                         socket.onopen = function() {
                             console.log('WebSocket connected');
@@ -175,7 +184,7 @@
 
         document.getElementById('stopBtn').addEventListener('click', async () => {
             try {
-                const response = await fetch('/stop_analyzer');
+                const response = await fetch(`${config.backendUrl}/stop_analyzer`);
                 const result = await response.json();
                 console.log('Stop analyzer response:', result);
                 
