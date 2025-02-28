@@ -13,7 +13,7 @@ This project leverages artificial intelligence to:
 
 ## Live Demo
 - Frontend: [https://device-analyzer.vercel.app](https://device-analyzer.vercel.app)
-- Backend: [https://smart-device-analyzer.onrender.com](https://smart-device-analyzer.onrender.com)
+- Backend: 
 
 ## Project Structure
 ```
@@ -151,24 +151,13 @@ WS_PORT=5002       # WebSocket server port
 ## Demo & Screenshots
 
 ### Live Demo Video
-[![Device Analyzer Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+- In Progress
 
 ### Screenshots
 
 #### Dashboard Overview
 ![Dashboard Overview](screenshots/dashboard.png)
 ![Dashboard Overview2](screenshots/dashboard2.png)
-
-#### Real-time Monitoring
-<img src="screenshots/monitoring.png" width="600" alt="Real-time Monitoring">
-
-#### Device Sentiment Analysis
-<p align="center">
-  <img src="screenshots/sentiment.png" width="400" alt="Sentiment Analysis">
-</p>
-
-### GIF Demo
-![Device Analyzer in Action](screenshots/demo.gif)
 
 ## Contributing
 
