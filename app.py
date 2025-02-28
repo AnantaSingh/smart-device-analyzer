@@ -50,5 +50,5 @@ def stop_analyzer():
 if __name__ == '__main__':
     # In local development, this will use 5000
     # On Render, this will use whatever PORT they assign
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 5001))
     app.run(host='0.0.0.0', debug=False, port=port) 

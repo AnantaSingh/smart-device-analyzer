@@ -79,12 +79,12 @@
         let socket = null;
 
         const config = {
-            backendUrl: window.location.hostname === 'localhost' 
-                ? 'http://localhost:5000'
-                : 'https://smart-device-analyzer.onrender.com',  // Update with your Render URL
-            wsUrl: window.location.hostname === 'localhost'
-                ? 'ws://localhost:5001'
-                : 'wss://smart-device-analyzer.onrender.com'     // Update with your Render URL
+            backendUrl: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                ? 'http://127.0.0.1:5001'
+                : 'https://smart-device-analyzer.onrender.com',
+            wsUrl: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                ? 'ws://127.0.0.1:5002'
+                : 'wss://smart-device-analyzer.onrender.com'
         };
 
         function updateMetrics(data) {

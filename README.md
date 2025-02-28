@@ -11,118 +11,164 @@ This project leverages artificial intelligence to:
 - Generate actionable insights
 - Monitor device performance
 
-## Key Features
-
-🔍 **Real-time Analysis**
-- Continuous monitoring of device data
-- Instant anomaly detection
-- Real-time performance metrics
-
-🤖 **AI Capabilities**
-- Machine Learning based pattern recognition
-- Sentiment analysis of data trends
-- Predictive analytics
-- Automated insight generation
-
-📊 **Data Processing**
-- Efficient data handling
-- Scalable architecture
-- Robust error handling
+## Live Demo
+- Frontend: [https://device-analyzer.vercel.app](https://device-analyzer.vercel.app)
+- Backend: [https://smart-device-analyzer.onrender.com](https://smart-device-analyzer.onrender.com)
 
 ## Project Structure
-
-```python
-smart-device-analyzer/
-├── AIAPP/
-│   └── ai_analyzer.py
-├── requirements.txt
-└── README.md
+```
+/
+├── app.py                # Main Flask application
+├── ai_analyzer.py        # AI analysis logic
+├── templates/           
+│   └── index.html       # Frontend dashboard
+├── src/
+│   ├── __init__.py
+│   ├── config.py        # Configuration settings
+│   ├── data_pipeline.py # Data processing pipeline
+│   └── data_handlers/
+│       └── sample_data.py
+├── requirements.txt     # Python dependencies
+└── vercel.json         # Vercel configuration
 ```
 
 ## Technical Requirements
 
-- Python 3.9+
-- PyTorch
+- Python 3.11+
+- Flask
+- WebSocket support
 - Additional dependencies in requirements.txt
 
-## Prerequisites
+## Local Development Setup
 
-- Python 3.9+
-- pip (Python package installer)
-- Terminal or Command Prompt
-
-## Installation & Setup
-
-1. Navigate to project directory:
+1. **Clone the repository:**
 ```bash
-cd /Users/anantasingh/Projects/AIApp
+git clone https://github.com/yourusername/smart-device-analyzer.git
+cd smart-device-analyzer
 ```
 
-2. Create and activate virtual environment:
+2. **Create and activate virtual environment:**
 ```bash
-# Create virtual environment
 python -m venv venv
-
-# Activate virtual environment
-source venv/bin/activate  # On macOS/Linux
-# OR
-venv\Scripts\activate     # On Windows
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install required packages:
+3. **Install dependencies:**
 ```bash
-pip install numpy
+pip install -r requirements.txt
 ```
 
-## Running the Application
-
-The application uses a client-server architecture and requires two terminal windows.
-
-### Start the Server (Terminal 1):
+4. **Run the application:**
 ```bash
-# Navigate to src directory
-cd /Users/anantasingh/Projects/AIApp/src
-
-# Run the analyzer
-python ai_analyzer.py
-
-# Enter 1 when prompted to start server
+python app.py
 ```
 
-### Start the Client (Terminal 2):
-```bash
-# Navigate to src directory
-cd /Users/anantasingh/Projects/AIApp/src
+The application will start with:
+- Backend server: `http://127.0.0.1:5001`
+- WebSocket server: `http://127.0.0.1:5002`
+- Access dashboard: Open `http://127.0.0.1:5001` in your browser
 
-# Run the analyzer
-python ai_analyzer.py
+## Debugging Common Issues
 
-# Enter 2 when prompted to start client
+1. **Port Already in Use:**
+   ```bash
+   # Check ports (macOS/Linux)
+   lsof -i :5001
+   lsof -i :5002
+   
+   # Kill process
+   kill -9 <PID>
+   
+   # Windows alternative
+   netstat -ano | findstr :5001
+   netstat -ano | findstr :5002
+   taskkill /PID <PID> /F
+   ```
+
+2. **WebSocket Connection Issues:**
+   - Check browser console for errors
+   - Try using `127.0.0.1` instead of `localhost`
+   - Verify both ports (5001 and 5002) are available
+   - Clear browser cache and reload
+
+3. **Import Errors:**
+   - Verify you're in the correct directory
+   - Check virtual environment is activated
+   - Reinstall dependencies:
+     ```bash
+     pip install -r requirements.txt
+     ```
+
+## Deployment Status
+
+### Backend (Render)
+- URL: https://smart-device-analyzer.onrender.com
+- Status: 🚧 Deployment in Progress
+- Stack: Python, Flask, WebSocket
+- Note: Initial deployment may take a few minutes to wake up
+
+### Frontend (Vercel)
+- URL: https://device-analyzer.vercel.app
+- Status: 🚧 Deployment in Progress
+- Stack: HTML, JavaScript, Bootstrap
+- Note: Frontend will be fully functional once backend is ready
+
+### Known Deployment Issues
+- Backend cold start: First request may take 30-60 seconds
+- WebSocket connection might need retry on first load
+- CORS settings are being configured
+
+### Deployment Progress
+- [x] Backend code pushed to Render
+- [x] Frontend code pushed to Vercel
+- [ ] CORS configuration
+- [ ] WebSocket setup
+- [ ] Final testing
+
+## Environment Variables
+```
+PORT=5001          # HTTP server port
+WS_PORT=5002       # WebSocket server port
 ```
 
-### Expected Output
+## Features
 
-- **Server Terminal:**
-  - "Server started on port 5001"
-  - Connection status messages
+🔍 **Real-time Analysis**
+- Live device metrics monitoring
+- Instant anomaly detection
+- Performance tracking
 
-- **Client Terminal:**
-  - Real-time device metrics
-  - Sentiment analysis results
-  - Anomaly detection alerts
-  - CPU and Memory usage statistics
+🤖 **AI Capabilities**
+- ML-based pattern recognition
+- Sentiment analysis
+- Predictive analytics
 
-### Stopping the Application
+📊 **Dashboard**
+- Real-time metrics visualization
+- Status indicators
+- Interactive controls
 
-- Press `Ctrl+C` in either terminal to stop the respective component
-- Close both terminals to completely shut down the application
+## Demo & Screenshots
 
-## Troubleshooting
+### Live Demo Video
+[![Device Analyzer Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
 
-If you encounter port-in-use errors:
-1. Wait a few minutes and try again
-2. Check if another instance is running
-3. Use Activity Monitor (macOS) or Task Manager (Windows) to check port usage
+### Screenshots
+
+#### Dashboard Overview
+![Dashboard Overview](screenshots/dashboard.png)
+![Dashboard Overview2](screenshots/dashboard2.png)
+
+#### Real-time Monitoring
+<img src="screenshots/monitoring.png" width="600" alt="Real-time Monitoring">
+
+#### Device Sentiment Analysis
+<p align="center">
+  <img src="screenshots/sentiment.png" width="400" alt="Sentiment Analysis">
+</p>
+
+### GIF Demo
+![Device Analyzer in Action](screenshots/demo.gif)
 
 ## Contributing
 
@@ -134,6 +180,6 @@ This project is licensed under the MIT License.
 
 ## Contact
 
-Ananta Singh
-- GitHub: [@AnantaSingh](https://github.com/AnantaSingh)
-- Project Link: [https://github.com/AnantaSingh/smart-device-analyzer](https://github.com/AnantaSingh/smart-device-analyzer)
+Your Name
+- GitHub: [@YourUsername](https://github.com/YourUsername)
+- Project Link: [https://github.com/yourusername/smart-device-analyzer](https://github.com/yourusername/smart-device-analyzer)

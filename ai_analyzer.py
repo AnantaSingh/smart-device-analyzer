@@ -179,14 +179,11 @@ class DeviceAnalyzer:
             import websockets
             import asyncio
             
-            # Use a different port for WebSocket
+            # Use a different port for WebSocket (5002)
             if port is None:
-                # WebSocket port should be different from HTTP port
-                ws_port = int(os.environ.get('WS_PORT', 5001))
-            else:
-                ws_port = port
-
-            print(f"Starting WebSocket server on port {ws_port}")
+                port = int(os.environ.get('WS_PORT', 5002))  # Changed from 5001 to 5002
+            
+            print(f"Starting WebSocket server on port {port}")
 
             async def handler(websocket):
                 print(f"New client connected!")
@@ -218,11 +215,11 @@ class DeviceAnalyzer:
                 self.server = await websockets.serve(
                     handler, 
                     "0.0.0.0", 
-                    ws_port,
+                    port,
                     reuse_address=True,
                     close_timeout=1
                 )
-                print(f"WebSocket server running on port {ws_port}")
+                print(f"WebSocket server running on port {port}")
                 await self.server.wait_closed()
 
             self.loop = asyncio.new_event_loop()
